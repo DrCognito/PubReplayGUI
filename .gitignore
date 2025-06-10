@@ -3,6 +3,7 @@ build/*
 dist/*
 bin/*
 output/*
+release/*
 app.log
 config.ini
 
