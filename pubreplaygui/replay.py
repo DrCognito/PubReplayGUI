@@ -2,6 +2,8 @@ from pathlib import Path
 from pubreplaygui import LOG, PARSER_LOC
 import subprocess
 from subprocess import CompletedProcess
+from queue import Queue
+from concurrent.futures import ProcessPoolExecutor
 
 
 def get_replay_files(replay_path: Path, min_bytes: int = 1000000) -> set[Path]:
@@ -36,19 +38,56 @@ def process_replay(replay_in: Path, json_out: Path, ignore_existing=False) -> Co
     return subprocess.run(process_args, capture_output=True, text=True)
 
 
-def process_replay_path(replay_dir: Path, output_dir: Path, reprocess=False):
+def process_replay_path(
+    replay_dir: Path, output_dir: Path, reprocess=False,
+    progress_bar=None):
     replays = get_replay_files(replay_dir)
-
+    if progress_bar is not None:
+        progress_bar['maximum'] = len(replays)
     for r in replays:
         json_path = output_dir / r.name.replace(".dem", ".json")
         if json_path.exists() and not reprocess:
             LOG.info(f"Skipping replay file {r.name} as {json_path.name} exists in output.")
         LOG.info(f"Processing {r.name}.")
         result = process_replay(r, output_dir,)
-        LOG.info(f"Process completed with:")
-        LOG.info(result.stdout)
+        LOG.debug(f"Process completed with:")
+        LOG.debug(result.stdout)
+        if progress_bar is not None:
+            progress_bar.step()
 
     return
+
+
+def thread_replays(replay_dir: Path, output_dir: Path, reprocess=False,
+    progress_bar=None, res_queue: Queue | None = None):
+    '''
+    Runs replay processing in a seperate thread (for a GUI).
+    Results are added to a queue for post processing!
+    '''
+    replays = get_replay_files(replay_dir)
+    if progress_bar is not None:
+        progress_bar['maximum'] = len(replays)
+    executor = ProcessPoolExecutor(max_workers=1)
+    for r in replays:
+        json_path = output_dir / r.name.replace(".dem", ".json")
+        if json_path.exists() and not reprocess:
+            LOG.info(f"Skipping replay file {r.name} as {json_path.name} exists in output.")
+            if progress_bar is not None:
+                progress_bar.step()
+            continue
+        LOG.debug(f"Adding {r.name} to ProcessPool.")
+        task = executor.submit(process_replay, r, output_dir)
+        # call_back = lambda x: res_queue.put((str(r.name),x))
+        if res_queue is not None:
+            # task.add_done_callback(call_back)
+            res_queue.put((r.name, task))
+            # pass
+        # result = process_replay(r, output_dir,)
+        # LOG.debug(f"Process completed with:")
+        # LOG.debug(result.stdout)
+
+    return
+
 
 if __name__ == "__main__":
     replay_dir = Path("D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\game\\dota\\replays")
