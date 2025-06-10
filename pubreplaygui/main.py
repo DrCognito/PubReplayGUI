@@ -5,7 +5,7 @@ from pubreplaygui.ui import MainApplication
 from pubreplaygui.replay import process_replay_path
 import tkinter as tk
 import tkinter.ttk as ttk
-
+from multiprocessing import freeze_support
 
 def environment_check():
     valid = True
@@ -24,6 +24,7 @@ def environment_check():
         LOG.error("Environment check failed!")
 
 if __name__ == "__main__":
+    freeze_support()
     # Setup the gui
     root = tk.Tk()
     main_ui = MainApplication(root)
