@@ -10,9 +10,8 @@ from multiprocessing import freeze_support
 def environment_check():
     valid = True
     if not CONFIG_LOC.exists():
-        LOG.error("Config.ini is missing.")
+        LOG.info("Config.ini is missing.")
         valid = False
-    if not PARSER_LOC.exists():
         LOG.error(f"Parser binary is missing at {PARSER_LOC}")
         valid = False
     if not Path("./output").exists():
@@ -37,6 +36,8 @@ if __name__ == "__main__":
     main_ui.replay_path = config['PATHS']['replays']
     # Output
     main_ui.output_path = Path(config["PATHS"]['output']).resolve()
+    # Overwrite check
+    main_ui.overwrite.set(config['OPTIONS'].getboolean('overwrite_output'))
     main_ui._config = config
     main_ui._save_config = lambda : save_config(CONFIG_LOC, config)
     # Env check
