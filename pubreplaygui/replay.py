@@ -124,7 +124,7 @@ def thread_replays(replay_dir: Path, output_dir: Path, reprocess=False,
     for r in replays:
         json_path = output_dir / r.name.replace(".dem", ".json")
         if json_path.exists() and not reprocess:
-            LOG.info(f"Skipping replay file {r.name} as {json_path.name} exists in output.")
+            LOG.info(f"{json_path.name} for replay {r.name} already exists in output.")
             if progress_bar is not None:
                 progress_bar.step()
             continue
