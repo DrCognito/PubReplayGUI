@@ -29,6 +29,15 @@ class MainApplication(tk.Frame):
         self.loc_picker.pack(pady=5, padx=5)
 
         self.doer_frame = ttk.Frame()
+        self.overwrite_check = ttk.Checkbutton(
+            master=self.doer_frame,
+            text="Overwrite existing",
+            onvalue=True, offvalue=False,
+            command=self.update_overwrite
+        )
+        self.overwrite = tk.BooleanVar(value=True)
+        self.overwrite_check.config(variable=self.overwrite)
+        self.overwrite_check.pack(side=tk.LEFT, expand=True, fill='x')
         self.process_button = ttk.Button(
             master=self.doer_frame,
             text="Process replays",
@@ -70,6 +79,13 @@ class MainApplication(tk.Frame):
         self.replay_queue = Queue()
         # Register the replay queue check
         self.parent.after(200, self.check_queue)
+
+    def update_overwrite(self):
+        if "OPTIONS" not in self._config:
+            self._config["OPTIONS"] = {}
+        self._config["OPTIONS"]["overwrite_output"] = str(self.overwrite.get())
+        self._save_config()
+        return
 
     @property
     def replay_path(self) -> Path | str:
@@ -155,12 +171,12 @@ class MainApplication(tk.Frame):
         self.parent.after(20, self.check_queue)
 
 
-    def process_replays(
-        self, reprocess=True):
+    def process_replays(self):
+        reprocess = not self.overwrite.get()
         thread_replays(
             self.replay_path, self.output_path,
             reprocess, self.progress_bar, self.replay_queue)
-        LOG.debug("Submitted all replays.")
+        LOG.debug(f"Submitted all replays. Reprocess is {reprocess}")
 
         return
 if __name__ == "__main__":
