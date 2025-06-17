@@ -7,7 +7,10 @@ def make_config(conf_path: Path) -> ConfigParser:
     config = ConfigParser()
     config["PATHS"] = {
         "replays": "Select directory.",
-        "output": "output"
+        "output": "output",
+    }
+    config["OPTIONS"] = {
+        "overwrite_output": 1
     }
 
     save_config(conf_path, config)
