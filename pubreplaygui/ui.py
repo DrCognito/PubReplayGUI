@@ -172,7 +172,7 @@ class MainApplication(tk.Frame):
 
 
     def process_replays(self):
-        reprocess = not self.overwrite.get()
+        reprocess = self.overwrite.get()
         thread_replays(
             self.replay_path, self.output_path,
             reprocess, self.progress_bar, self.replay_queue)
