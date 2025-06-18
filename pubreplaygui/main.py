@@ -10,8 +10,9 @@ from multiprocessing import freeze_support
 def environment_check():
     valid = True
     if not CONFIG_LOC.exists():
-        LOG.info("Config.ini is missing.")
+        LOG.error("Config.ini is missing.")
         valid = False
+    if not PARSER_LOC.exists():
         LOG.error(f"Parser binary is missing at {PARSER_LOC}")
         valid = False
     if not Path("./output").exists():
