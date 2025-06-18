@@ -126,6 +126,9 @@ class MainApplication(tk.Frame):
 
     @staticmethod
     def validate_directory(directory: str | Path) -> bool:
+        if(str(directory) == 'Select directory.'):
+            LOG.debug("Directory is the default unset yet.")
+            return False
         if type(directory) == str:
             dir_path = Path(directory)
         else:
